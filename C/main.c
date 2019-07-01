@@ -26,6 +26,7 @@ enum move{
   down
 };
 
+
 enum blockname{
   nothing,
   musume,
@@ -42,6 +43,7 @@ enum blockname{
 
 
 void setblock(int puzzle[][NUM_OF_X],struct block Block){
+
   for(int y = 0 ; y < Block.lenY ; y++){
     for(int x = 0 ; x < Block.lenX ; x++ ){
       puzzle[Block.positionY + y][Block.positionX + x] = Block.name;
@@ -108,7 +110,7 @@ int movecheck(int puzzle[][NUM_OF_X], struct block Block[BLOCK_NUMBER], enum blo
         }
         return puzzle[checkY][checkX];
       }
-      return puzzle[checkY][Block[Blockname].positionX];
+      return puzzle[checkY][Block[Blockname].positionX];//邪魔しているブロックを報告
       break;
   }
 }
@@ -128,7 +130,9 @@ struct block moveblock(int puzzle[][NUM_OF_X],struct block Block[BLOCK_NUMBER], 
 
   flag = movecheck(puzzle,Block,Blockname,direction);
 
-  if(flag == 0){
+  if(flag == nothing){
+    int preX = Block[Blockname].positionX;
+    int preY = Block[Blockname].positionY;
     switch(direction){
       case right:
         Block[Blockname].positionX += 1;
@@ -149,24 +153,37 @@ struct block moveblock(int puzzle[][NUM_OF_X],struct block Block[BLOCK_NUMBER], 
         break;
 
    }
+
+
+
  //前のブロックの情報を削除
     for(int y = 0 ; y < Block[Blockname].lenY ; y++){
       for(int x = 0 ; x < Block[Blockname].lenX ; x++ ){
-        puzzle[Block[Blockname].prepositionY + y][Block[Blockname].prepositionX + x] = nothing;
+        puzzle[preY + y][preX + x] = nothing;
       }
     }
+
     setblock(puzzle,Block[Blockname]);
     return Block[Blockname];
+
   }else{
-    moveblock(puzzle,Block,flag,right);
+    if(Block[flag].positionX == NUM_OF_X -1){//邪魔なブロックが一番左にあるとき
+      /*if(Block[flag].positionY == 0){
+        moveblock(puzzle,Block,flag,left);
+      }else{*/
+        moveblock(puzzle,Block,flag,up);
+      //}
+    }else{
+      moveblock(puzzle,Block,flag,right);//邪魔しているブロックを移動
+
+    }
+    return Block[Blockname];
   }
 }
 
 
 struct block setInfo(int name,int positionX,int positionY,int lenX,int lenY){
-
- struct block Block;
-
+  struct block Block;
   Block.name = name;
   Block.positionX = positionX;
   Block.positionY = positionY;
@@ -297,6 +314,8 @@ int main(int argc, char const *argv[]) {
     }
   }
 
+
+/*＊＊＊＊＊＊以下実験用＊＊＊＊＊＊＊＊*/
   //ブロック配置
   setblock(puzzle,daughter);
   setblock(puzzle,father);
@@ -316,10 +335,11 @@ int main(int argc, char const *argv[]) {
 
 
 //ルーチン
-  for(int i = 0;i<6;i++){
+  while(1){
     moveblock(puzzle,Blockmanager,musume,down);
     Write_puzzle(puzzle);
+    if(Blockmanager[musume].positionX == 1 && Blockmanager[musume].positionY == 3){
+      break;
+    }
   }
-
-
 }
